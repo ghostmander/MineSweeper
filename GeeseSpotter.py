@@ -10,7 +10,6 @@ count = 5  # int(input('Please enter the number of geese: '))
 isRunning = True
 
 
-
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # |||                                           ||||| #
@@ -70,6 +69,7 @@ def restart():
     geese, zeroes, revealPerTurn = [], [], []
     gooseAdder(x_dim, y_dim, count)
     countAdd()
+
 
 def quit():
     global isRunning
@@ -150,7 +150,7 @@ def test():
 
 restart()
 
-#boardPrinter()
-#test()
+# boardPrinter()
+# test()
 while isRunning:
     actionTaken()
