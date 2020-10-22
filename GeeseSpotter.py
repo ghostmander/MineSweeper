@@ -9,9 +9,6 @@ count = 5  # int(input('Please enter the number of geese: '))
 
 isRunning = True
 
-main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
-printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
-geese = []
 
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
@@ -21,6 +18,8 @@ geese = []
 # |||                                           ||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+
+
 def gooseAdder(x_dim, y_dim, count):
     global main_list, geese
     for i in range(count):
@@ -33,8 +32,31 @@ def gooseAdder(x_dim, y_dim, count):
         geese.append((x_geese, y_geese))
 
 
-def show():
-    pass
+def show(x_coord, y_coord):
+    global main_list, printable_list, revealPerTurn
+    revealPerTurn.append((x_coord, y_coord))
+    if main_list[x_coord][y_coord] == 0:
+        zeroReveal(x_coord, y_coord)
+    for x, y in revealPerTurn:
+        normalReveal(x, y)
+    revealPerTurn = []
+    boardPrinter()
+
+
+def normalReveal(x_coord, y_coord):
+    global main_list, printable_list, revealPerTurn
+    printable_list[x_coord][y_coord] = str(main_list[x_coord][y_coord])
+
+
+def zeroReveal(x_coord, y_coord):
+    global zeroes, revealPerTurn
+    neighbors = neighborCalc(x_coord, y_coord)
+    for x, y in neighbors:
+        if (x, y) not in zeroes:
+            revealPerTurn.append((x, y))
+            if main_list[x][y] == 0:
+                zeroes.append((x, y))
+                zeroReveal(x, y)
 
 
 def mark():
@@ -42,11 +64,12 @@ def mark():
 
 
 def restart():
-    global main_list, printable_list, geese
-    main_list = [[0 for x in range(x_dim)] for y in range(y_dim)]
-    printable_list = [["*" for x in range(x_dim)] for y in range(y_dim)]
-    geese = []
-
+    global main_list, printable_list, geese, zeroes, revealPerTurn
+    main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
+    printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
+    geese, zeroes, revealPerTurn = [], [], []
+    gooseAdder(x_dim, y_dim, count)
+    countAdd()
 
 def quit():
     global isRunning
@@ -56,8 +79,12 @@ def quit():
 def actionTaken():
     ch = input("Please enter the action ([S]how; [M]ark; [R]estart; [Q]uit): ")
     if ch.upper() == "S":
-        show()
+        x = int(input("Please enter the x location: "))
+        y = int(input("Please enter the y location: "))
+        show(x, y)
     elif ch.upper() == "M":
+        x = int(input("Please enter the x location: "))
+        y = int(input("Please enter the y location: "))
         mark()
     elif ch.upper() == "R":
         restart()
@@ -111,17 +138,19 @@ def boardPrinter():
         print(''.join(print_object))
 
 
-def boardUpdater():
+def test():
     global main_list, printable_list
     for i in range(x_dim):
         for j in range(y_dim):
-            if main_list[i][j] != 0:
-                printable_list[i][j] = str(main_list[i][j])
+            printable_list[i][j] = str(main_list[i][j])
     boardPrinter()
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
 
-gooseAdder(x_dim, y_dim, count)
-countAdd()
-boardUpdater()
+restart()
+
+#boardPrinter()
+#test()
+while isRunning:
+    actionTaken()
