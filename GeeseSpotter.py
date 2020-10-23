@@ -17,8 +17,6 @@ isRunning = True
 # |||                                           ||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
-
-
 def gooseAdder(x_dim, y_dim, count):
     global main_list, geese
     for i in range(count):
@@ -165,25 +163,15 @@ def isGameWon():
     return 1
 
 
-def test():
-    global main_list, printable_list
-    for i in range(x_dim):
-        for j in range(y_dim):
-            printable_list[i][j] = str(main_list[i][j])
-    boardPrinter()
+
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
 
 restart()
 
-for print_object in main_list:
-    for i in print_object:
-        print(str(i), end='')
-    print()
 
 boardPrinter()
-# test()
 while isRunning:
     actionTaken()
     winVar = isGameWon()
