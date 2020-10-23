@@ -33,13 +33,16 @@ def gooseAdder(x_dim, y_dim, count):
 
 def show(x_coord, y_coord):
     global main_list, printable_list, revealPerTurn
-    revealPerTurn.append((x_coord, y_coord))
-    if main_list[x_coord][y_coord] == 0:
-        zeroReveal(x_coord, y_coord)
-    for x, y in revealPerTurn:
-        normalReveal(x, y)
-    revealPerTurn = []
-    boardPrinter()
+    if ((x_coord, y_coord) not in marked) and ((x_coord, y_coord) not in revealed):
+        revealPerTurn.append((x_coord, y_coord))
+        if main_list[x_coord][y_coord] == 0:
+            zeroReveal(x_coord, y_coord)
+        for x, y in revealPerTurn:
+            normalReveal(x, y)
+        revealed.extend(revealPerTurn)
+        revealPerTurn = []
+        markAll()
+        boardPrinter()
 
 
 def normalReveal(x_coord, y_coord):
@@ -58,15 +61,28 @@ def zeroReveal(x_coord, y_coord):
                 zeroReveal(x, y)
 
 
-def mark():
-    pass
+def mark(x, y):
+    global printable_list, marked
+    if ((x, y) not in marked) and ((x, y) not in revealed):
+        marked.append((x, y))
+        markAll()
+    elif ((x, y) in marked) and ((x, y) not in revealed):
+        marked.remove((x, y))
+        printable_list[x][y] = '*'
+    boardPrinter()
+
+
+def markAll():
+    global marked, printable_list
+    for x, y in marked:
+        printable_list[x][y] = 'M'
 
 
 def restart():
-    global main_list, printable_list, geese, zeroes, revealPerTurn
+    global main_list, printable_list, geese, zeroes, revealPerTurn, marked, revealed
     main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
     printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
-    geese, zeroes, revealPerTurn = [], [], []
+    geese, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
     gooseAdder(x_dim, y_dim, count)
     countAdd()
 
@@ -85,7 +101,7 @@ def actionTaken():
     elif ch.upper() == "M":
         x = int(input("Please enter the x location: "))
         y = int(input("Please enter the y location: "))
-        mark()
+        mark(x, y)
     elif ch.upper() == "R":
         restart()
     elif ch.upper() == "Q":
@@ -102,7 +118,7 @@ def neighborCalc(x_coord, y_coord):
         return ([(-1, -2), (-2, -1), (-2, -2)])
 
     elif (x_coord, y_coord) == (0, y_dim - 1):
-        return ([(0, -2), (1, -1), (1, -2)])
+        return ([(0, y_dim-2), (1, y_dim-1), (1, y_dim-2)])
 
     elif (x_coord, y_coord) == (x_dim - 1, 0):
         return ([(-1, 1), (-2, 0), (-2, -1)])
