@@ -3,9 +3,9 @@ import random
 
 print('Welcome to GeeseSpotter!')
 
-x_dim = 3  # int(input('Please enter the x dimension: '))
-y_dim = 5  # int(input('Please enter the y dimension: '))
-count = 5  # int(input('Please enter the number of geese: '))
+x_dim = int(input('Please enter the x dimension: '))
+y_dim = int(input('Please enter the y dimension: '))
+count = int(input('Please enter the number of geese: '))
 
 isRunning = True
 
@@ -42,7 +42,7 @@ def show(x_coord, y_coord):
         revealed.extend(revealPerTurn)
         revealPerTurn = []
         markAll()
-        boardPrinter()
+    boardPrinter()
 
 
 def normalReveal(x_coord, y_coord):
@@ -115,25 +115,25 @@ def neighborCalc(x_coord, y_coord):
         return ([(0, 1), (1, 0), (1, 1)])
 
     elif (x_coord, y_coord) == (x_dim - 1, y_dim - 1):
-        return ([(-1, -2), (-2, -1), (-2, -2)])
+        return ([(x_dim-1, y_dim-2), (x_dim-2, y_dim-1), (x_dim-2, y_dim-2)])
 
     elif (x_coord, y_coord) == (0, y_dim - 1):
         return ([(0, y_dim-2), (1, y_dim-1), (1, y_dim-2)])
 
     elif (x_coord, y_coord) == (x_dim - 1, 0):
-        return ([(-1, 1), (-2, 0), (-2, -1)])
+        return ([(x_dim-1, 1), (x_dim-2, 0), (x_dim-2, 1)])
 
     elif x_coord == 0:
         return ([(0, y_coord-1), (0, y_coord+1), (1, y_coord-1), (1, y_coord+1), (1, y_coord)])
 
     elif x_coord == (x_dim-1):
-        return ([(-1, y_coord-1), (-1, y_coord+1), (-2, y_coord-1), (-2, y_coord+1), (-2, y_coord)])
+        return ([(x_dim-1, y_coord-1), (x_dim-1, y_coord+1), (x_dim-2, y_coord-1), (x_dim-2, y_coord+1), (x_dim-2, y_coord)])
 
     elif y_coord == 0:
         return ([(x_coord-1, 0), (x_coord+1, 0), (x_coord-1, 1), (x_coord+1, 1), (x_coord, 1)])
 
     elif y_coord == (y_dim-1):
-        return ([(x_coord-1, -1), (x_coord+1, -1), (x_coord-1, -2), (x_coord+1, -2), (x_coord, -2)])
+        return ([(x_coord, y_dim-2), (x_coord - 1, y_dim-2), (x_coord + 1, y_dim-2), (x_coord - 1, y_dim-1), (x_coord + 1, y_dim-1)])
     else:
         return [(x, y) for x in range(x_coord-1, x_coord+2) for y in range(y_coord-1, y_coord+2)]
 
@@ -154,6 +154,17 @@ def boardPrinter():
         print(''.join(print_object))
 
 
+def isGameWon():
+    if [i for i in geese if i not in marked] == []:
+        return 2
+    for i in geese:
+        if i in revealed:
+            return 0
+    if (count + len(revealed) == x_dim*y_dim):
+        return 2
+    return 1
+
+
 def test():
     global main_list, printable_list
     for i in range(x_dim):
@@ -166,7 +177,27 @@ def test():
 
 restart()
 
-# boardPrinter()
+for print_object in main_list:
+    for i in print_object:
+        print(str(i), end='')
+    print()
+
+boardPrinter()
 # test()
 while isRunning:
     actionTaken()
+    winVar = isGameWon()
+    if winVar == 2:
+        print("Congratulations! You Win! Press any Key to Restart or Press \'q\' to Exit.")
+        ch = input().lower().strip()
+        if ch == 'q':
+            print('Thanks For Playing! Have a Good Day.')
+            break
+        restart()
+    elif winVar == 0:
+        print("You Lost! Press any Key to Restart or Press \'q\' to Exit.")
+        ch = input().lower().strip()
+        if ch == 'q':
+            print('Thanks For Playing! Have a Good Day.')
+            break
+        restart()
