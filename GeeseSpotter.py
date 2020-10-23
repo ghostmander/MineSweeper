@@ -161,13 +161,11 @@ def isGameWon():
     if (count + len(revealed) == x_dim*y_dim):
         return 2
     return 1
-
-
-
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
 
+# Main Function to Initialise All Variables Instead of Updating that on both places.
 restart()
 
 
@@ -182,6 +180,7 @@ while isRunning:
             print('Thanks For Playing! Have a Good Day.')
             break
         restart()
+        boardPrinter()
     elif winVar == 0:
         print("You Lost! Press any Key to Restart or Press \'q\' to Exit.")
         ch = input().lower().strip()
@@ -189,3 +188,4 @@ while isRunning:
             print('Thanks For Playing! Have a Good Day.')
             break
         restart()
+        boardPrinter()
