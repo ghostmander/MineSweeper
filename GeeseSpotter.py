@@ -7,6 +7,9 @@ x_dim = int(input('Please enter the x dimension: '))
 y_dim = int(input('Please enter the y dimension: '))
 count = int(input('Please enter the number of geese: '))
 
+main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
+printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
+geese, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
 isRunning = True
 
 
@@ -30,7 +33,7 @@ def gooseAdder(x_dim, y_dim, count):
 
 
 def show(x_coord, y_coord):
-    global main_list, printable_list, revealPerTurn
+    global main_list, printable_list, revealPerTurn, revealed
     if ((x_coord, y_coord) not in marked) and ((x_coord, y_coord) not in revealed):
         revealPerTurn.append((x_coord, y_coord))
         if main_list[x_coord][y_coord] == 0:
@@ -38,6 +41,7 @@ def show(x_coord, y_coord):
         for x, y in revealPerTurn:
             normalReveal(x, y)
         revealed.extend(revealPerTurn)
+        revealed = list(set(revealed))
         revealPerTurn = []
         markAll()
     boardPrinter()
@@ -160,13 +164,15 @@ def isGameWon():
             return 0
     if (count + len(revealed) == x_dim*y_dim):
         return 2
+    print(len(revealed))
     return 1
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
 
-# Main Function to Initialise All Variables Instead of Updating that on both places.
-restart()
+gooseAdder(x_dim, y_dim, count)
+countAdd()
+
 
 
 boardPrinter()
