@@ -1,4 +1,5 @@
 import random
+import tkinter
 
 
 print('Welcome to GeeseSpotter!')
@@ -162,7 +163,7 @@ def isGameWon():
     for i in geese:
         if i in revealed:
             return 0
-    elif (count + len(revealed) == x_dim*y_dim):
+    if (count + len(revealed) == x_dim*y_dim):
         return 2
     print(len(revealed))
     return 1
@@ -172,7 +173,6 @@ def isGameWon():
 
 gooseAdder(x_dim, y_dim, count)
 countAdd()
-
 
 
 boardPrinter()
