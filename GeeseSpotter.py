@@ -13,7 +13,7 @@ geese, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
 isRunning = True
 
 
-# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| .m#
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # |||                                           ||||| #
 # |||                  FUNCTIONS                ||||| #
@@ -162,7 +162,7 @@ def isGameWon():
     for i in geese:
         if i in revealed:
             return 0
-    if (count + len(revealed) == x_dim*y_dim):
+    elif (count + len(revealed) == x_dim*y_dim):
         return 2
     print(len(revealed))
     return 1
