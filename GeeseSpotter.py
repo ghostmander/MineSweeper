@@ -1,20 +1,34 @@
 import random
-import tkinter
+import tkinter as tk
+try:
+    from PIL import Image, ImageTk
+except ImportError:
+    import ImageTk
+    import Image
 
 
 print('Welcome to GeeseSpotter!')
 
-x_dim = int(input('Please enter the x dimension: '))
-y_dim = int(input('Please enter the y dimension: '))
-count = int(input('Please enter the number of geese: '))
+x_dim = 5  # int(input('Please enter the x dimension: '))
+y_dim = 5  # int(input('Please enter the y dimension: '))
+count = 1  # int(input('Please enter the number of geese: '))
+
+
+root = tk.Tk()
+root.title("Geese Spotter")
+root.geometry("684x700")
+root.configure(bg='#a1a1a1')
 
 main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
 printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
 geese, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
-isRunning = True
+isRunning = False  # True
+
+game = tk.Frame(root, bg='#000', height=572, width=572)
+game.pack(pady=20)
 
 
-# ||||||||||||||||||||||||||||||||||||||||||||||||||| .m#
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # |||                                           ||||| #
 # |||                  FUNCTIONS                ||||| #
@@ -33,8 +47,10 @@ def gooseAdder(x_dim, y_dim, count):
         geese.append((x_geese, y_geese))
 
 
-def show(x_coord, y_coord):
+def show(x_coord, y_coord, event):
     global main_list, printable_list, revealPerTurn, revealed
+    buttonUpdater(event.widget, main_list[x_coord][y_coord])
+
     if ((x_coord, y_coord) not in marked) and ((x_coord, y_coord) not in revealed):
         revealPerTurn.append((x_coord, y_coord))
         if main_list[x_coord][y_coord] == 0:
@@ -46,14 +62,15 @@ def show(x_coord, y_coord):
         revealPerTurn = []
         markAll()
     boardPrinter()
+    # winCondition()
 
 
-def normalReveal(x_coord, y_coord):
+def normalReveal(x_coord, y_coord, ):
     global main_list, printable_list, revealPerTurn
     printable_list[x_coord][y_coord] = str(main_list[x_coord][y_coord])
 
 
-def zeroReveal(x_coord, y_coord):
+def zeroReveal(x_coord, y_coord, ):
     global zeroes, revealPerTurn
     neighbors = neighborCalc(x_coord, y_coord)
     for x, y in neighbors:
@@ -64,7 +81,7 @@ def zeroReveal(x_coord, y_coord):
                 zeroReveal(x, y)
 
 
-def mark(x, y):
+def mark(x, y, event):
     global printable_list, marked
     if ((x, y) not in marked) and ((x, y) not in revealed):
         marked.append((x, y))
@@ -88,6 +105,9 @@ def restart():
     geese, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
     gooseAdder(x_dim, y_dim, count)
     countAdd()
+    for i in range(x_dim):
+        for j in range(y_dim):
+            buttonFunc(i, j)
 
 
 def quit():
@@ -167,6 +187,76 @@ def isGameWon():
         return 2
     print(len(revealed))
     return 1
+
+
+def winCondition():
+    winVar = isGameWon()
+    if winVar == 2:
+        print("Congratulations! You Win! Press any Key to Restart or Press \'q\' to Exit.")
+        ch = input().lower().strip()
+        if ch == 'q':
+            print('Thanks For Playing! Have a Good Day.')
+            return None
+        restart()
+        boardPrinter()
+    elif winVar == 0:
+        print("You Lost! Press any Key to Restart or Press \'q\' to Exit.")
+        ch = input().lower().strip()
+        if ch == 'q':
+            print('Thanks For Playing! Have a Good Day.')
+            return None
+        restart()
+        boardPrinter()
+
+
+def buttonFunc(i, j):
+    height, width = (572//x_dim), (572//y_dim)
+    image = ImageTk.PhotoImage(Image.open(
+        'assets/unrevealed_tile.png').resize((height, width)))
+    lbl = tk.Label(game, image=image)
+    lbl.image = image
+    lbl.grid(row=i, column=j, padx=0.5, pady=0.5)
+    lbl.bind("<Button-1>", lambda x: show(i, j, x))
+    lbl.bind("<Button-2>", lambda x: mark(i, j, x))
+    lbl.bind("<Button-3>", lambda x: mark(i, j, x))
+
+
+def buttonUpdater(lbl, number):
+    if number == 0:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/zero.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 1:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/one.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 2:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/two.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 3:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/three.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 4:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/four.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 5:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/five.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 6:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/six.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 7:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/seven.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 8:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/eight.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == 9:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/bomb.png').resize(((572//x_dim), (572//y_dim))))
+    elif number == -1:
+        image = ImageTk.PhotoImage(Image.open(
+            'assets/mark.png').resize(((572//x_dim), (572//y_dim))))
+    lbl['image'] = image
+    lbl.image = image
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
@@ -175,23 +265,11 @@ gooseAdder(x_dim, y_dim, count)
 countAdd()
 
 
+for i in range(x_dim):
+    for j in range(y_dim):
+        buttonFunc(i, j)
+
+
 boardPrinter()
-while isRunning:
-    actionTaken()
-    winVar = isGameWon()
-    if winVar == 2:
-        print("Congratulations! You Win! Press any Key to Restart or Press \'q\' to Exit.")
-        ch = input().lower().strip()
-        if ch == 'q':
-            print('Thanks For Playing! Have a Good Day.')
-            break
-        restart()
-        boardPrinter()
-    elif winVar == 0:
-        print("You Lost! Press any Key to Restart or Press \'q\' to Exit.")
-        ch = input().lower().strip()
-        if ch == 'q':
-            print('Thanks For Playing! Have a Good Day.')
-            break
-        restart()
-        boardPrinter()
+
+tk.mainloop()
