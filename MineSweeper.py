@@ -42,16 +42,18 @@ with open('stats.csv', 'w', newline = '') as f:
 # |||                                           ||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+
+
 def menuMaker():
     mnu = Menu(root)
     root.config(menu = mnu)
 
-    file_menu = Menu(mnu)
+    file_menu = Menu(mnu, tearoff = False)
     mnu.add_cascade(label = "File", menu = file_menu)
 
-    file_menu.add_command(label = "New Game", command = restart)
+    file_menu.add_command(label = "New Game (F2)", command = restart)
     file_menu.add_separator()
-    file_menu.add_command(label = "Options", command = firstScreen)
+    file_menu.add_command(label = "Options      (F5)", command = firstScreen)
     file_menu.add_separator()
     file_menu.add_command(label = "Exit", command = root.quit)
 
@@ -160,6 +162,9 @@ def restart():
             buttonFunc(x_var, y_var)
     tiles = [x for x in game.winfo_children()]
     tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
+
+    root.bind("<F5>", lambda x: firstScreen())
+    root.bind("<F2>", lambda x: restart())
 
 
 def neighborCalc(x_coord, y_coord):
@@ -333,16 +338,30 @@ def dimSet(height, width, mines, diff):
     toRestart = False
 
     if value == 1:
-        x_dim, y_dim, count = 9, 9, 10
+        x_dim = 9
+        y_dim = 9
+        count = 10
         toRestart = True
     elif value == 2:
-        x_dim, y_dim, count = 16, 16, 40
+        x_dim = 16
+        y_dim = 16
+        count = 40
         toRestart = True
     elif value == 3:
-        x_dim, y_dim, count = 24, 24, 99
+        x_dim = 24
+        y_dim = 24
+        count = 99
         toRestart = True
+
     elif value == 0:
-        x_dim, y_dim, count = int(height.get()), int(width.get()), int(mines.get())
+        x_dim = height.get()
+        y_dim = width.get()
+        count = mines.get()
+
+        x_dim = int(x_dim)
+        y_dim = int(y_dim)
+        count = int(count)
+
         if (x_dim >= 9) and (y_dim >= 9) and (10 <= count <= x_dim * y_dim):
             toRestart = True
         else:
@@ -455,6 +474,12 @@ def firstScreen():
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+# ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
 menuMaker()
 minesAdder(x_dim, y_dim, count)
@@ -470,4 +495,5 @@ if [x_dim, y_dim, count] == [5, 5, 5]:
     firstScreen()
 
 root.bind("<F5>", lambda x: firstScreen())
+root.bind("<F2>", lambda x: restart())
 root.mainloop()
