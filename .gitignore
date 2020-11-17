@@ -1,4 +1,3 @@
 test.py
 .idea
-dimensions.csv
-stats.csv
+*.csv
