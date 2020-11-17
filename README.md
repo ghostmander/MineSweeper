@@ -2,8 +2,8 @@
 
 
 - [x] Make it Work
-- [ ] Add GUI
-- [ ] Develop Modes
-- [ ] Develop Graphics
+- [x] Add GUI
+- [x] Develop Modes
+- [x] Develop Graphics
 - [ ] Themes
 - [ ] Port it to C++
