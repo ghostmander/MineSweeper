@@ -1,3 +1,5 @@
+import sys
+import string
 import random
 import csv
 from tkinter import *
@@ -10,17 +12,17 @@ except ImportError:
 
 x_dim = 5  # int(input('Please enter the x dimension: '))
 y_dim = 5  # int(input('Please enter the y dimension: '))
-count = 1  # int(input('Please enter the number of geese: '))
+count = 5  # int(input('Please enter the number of geese: '))
 
 root = Tk()
 root.title("Minesweeper")
 root.geometry("684x700")
 root.configure(bg = '#a1a1a1')
+root.iconbitmap('assets\\logo.ico')
 
 main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
 printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
 mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
-isRunning = False  # True
 
 game = Frame(root, bg = '#000', height = 572, width = 572)
 game.pack(pady = 20)
@@ -113,18 +115,20 @@ def tileList():
 
 
 def restart(window):
-    global main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, tiles
+    global main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, tiles, root, game, L
+    root.destroy()
+    root = Tk()
+    root.title("Minesweeper")
+    root.geometry("684x700")
+    root.configure(bg = '#a1a1a1')
+
     main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
     printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
     mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
-    minesAdder(x_dim, y_dim, count)
-    countAdd()
-    window.grab_release()
-    window.destroy()
-    for i in range(x_dim):
-        for j in range(y_dim):
-            buttonFunc(i, j)
-    tileList()
+
+    game = Frame(root, bg = '#000', height = 572, width = 572)
+    game.pack(pady = 20)
+
     with open('stats.csv', 'r', newline = '') as F:
         L = list(csv.reader(F))
         L[1][0] = int(L[1][0]) + 1
@@ -132,6 +136,15 @@ def restart(window):
     with open('stats.csv', 'w', newline = '') as f:
         writeObject = csv.writer(f)
         writeObject.writerows(L)
+
+    minesAdder(x_dim, y_dim, count)
+    countAdd()
+
+    for x_var in range(x_dim):
+        for y_var in range(y_dim):
+            buttonFunc(x_var, y_var)
+    tiles = [x for x in game.winfo_children()]
+    tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
 
 
 def neighborCalc(x_coord, y_coord):
@@ -298,6 +311,97 @@ def statChanger(x):
     return tot, win, perc
 
 
+def firstScreen():
+    config = Toplevel()
+    config.grab_set()
+    difficulty = LabelFrame(config, text = 'Difficulty')
+    difficulty.pack(padx = 20, pady = 20)
+    firstThreeDifficulty = Frame(difficulty)
+    firstThreeDifficulty.grid(column = 0, row = 0, padx = 10)
+
+    customDifficulty = Frame(difficulty)
+    customDifficulty.grid(column = 1, row = 0, padx = 10)
+    customDifficultyButton = Frame(customDifficulty)
+    customDifficultyButton.grid(row = 0, column = 0, columnspan = 2)
+
+    diff = IntVar()
+
+    bbtn = Radiobutton(firstThreeDifficulty, text = "Beginner    \n10 Mines\n9x9 Grid  ", variable = diff, value = 1)
+    bbtn.pack(anchor = W)
+    ibtn = Radiobutton(firstThreeDifficulty, text = "Intermediate\n40 Mines\n16x16 Grid", variable = diff, value = 2)
+    ibtn.pack(anchor = W)
+    abtn = Radiobutton(firstThreeDifficulty, text = "Advanced    \n99 Mines\n24x24 Grid", variable = diff, value = 3)
+    abtn.pack(anchor = W)
+    customBtn = Radiobutton(customDifficultyButton, text = "Custom", variable = diff, value = 0)
+    customBtn.pack(anchor = W)
+
+    def validate_entry(text, min, max, widget):
+        if text == "":
+            return True
+        try:
+            value = int(text)
+        except ValueError:  # oops, couldn't convert to int
+            print('\a')
+            return False
+        if 0 <= value <= max:
+            return True
+        else:
+            print('\a')
+            widget.delete(0, END)
+            widget.insert(0, max)
+            height.config(validate = "key", validatecommand = hcmd)
+            width.config(validate = "key", validatecommand = wcmd)
+            mines.config(validate = "key", validatecommand = mcmd)
+            return False
+
+    hcmd = (root.register(lambda x: validate_entry(x, 9, 24, height)), "%P")
+    wcmd = (root.register(lambda x: validate_entry(x, 9, 24, width)), "%P")
+    mcmd = (root.register(lambda x: validate_entry(x, 10, 400, mines)), "%P")
+
+    hlbl = Label(customDifficulty, state = DISABLED, text = "Height (9-24)")
+    hlbl.grid(row = 1, column = 0)
+    height = Entry(customDifficulty, state = DISABLED)
+    height.grid(row = 1, column = 1)
+
+    wlbl = Label(customDifficulty, state = DISABLED, text = "Width (9-24)")
+    wlbl.grid(row = 2, column = 0)
+    width = Entry(customDifficulty, state = DISABLED)
+    width.grid(row = 2, column = 1)
+
+    mlbl = Label(customDifficulty, state = DISABLED, text = "Mines (10-400)")
+    mlbl.grid(row = 3, column = 0)
+    mines = Entry(customDifficulty, state = DISABLED)
+    mines.grid(row = 3, column = 1)
+
+    def enabler(event):
+        hlbl['state'] = NORMAL
+        height['state'] = NORMAL
+        height.config(validate = "key", validatecommand = hcmd)
+
+        wlbl['state'] = NORMAL
+        width['state'] = NORMAL
+        width.config(validate = "key", validatecommand = wcmd)
+
+        mlbl['state'] = NORMAL
+        mines['state'] = NORMAL
+        mines.config(validate = "key", validatecommand = mcmd)
+
+    def disabler(event):
+        hlbl['state'] = DISABLED
+        height['state'] = DISABLED
+
+        wlbl['state'] = DISABLED
+        width['state'] = DISABLED
+
+        mlbl['state'] = DISABLED
+        mines['state'] = DISABLED
+
+    bbtn.bind("<Button-1>", lambda x: disabler(x))
+    ibtn.bind("<Button-1>", lambda x: disabler(x))
+    abtn.bind("<Button-1>", lambda x: disabler(x))
+    customBtn.bind("<Button-1>", lambda x: enabler(x))
+
+
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
@@ -311,4 +415,6 @@ for x_var in range(x_dim):
 tiles = [x for x in game.winfo_children()]
 tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
 
-mainloop()
+firstScreen()
+
+root.mainloop()
