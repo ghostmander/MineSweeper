@@ -10,30 +10,6 @@ except ImportError:
     import ImageTk
     import Image
 
-with open('dimensions.csv', 'r', newline = '') as F:
-    x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
-
-root = Tk()
-root.title("Minesweeper")
-root.minsize(684, 700)
-root.configure(bg = '#a1a1a1')
-root.iconbitmap('assets\\logo.ico')
-
-main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
-printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
-mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
-
-game = Frame(root, bg = '#000', height = 572, width = 572)
-game.pack(pady = 20)
-
-with open('stats.csv', 'r', newline = '') as F:
-    L = list(csv.reader(F))
-    L[1][0] = int(L[1][0]) + 1
-    L[1][2] = f"{(int(L[1][1]) * 100) // int(L[1][0])}%"
-with open('stats.csv', 'w', newline = '') as f:
-    writeObject = csv.writer(f)
-    writeObject.writerows(L)
-
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
@@ -481,19 +457,85 @@ def firstScreen():
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
-menuMaker()
-minesAdder(x_dim, y_dim, count)
-countAdd()
+def main():
+    global x_dim, y_dim, count, F, root, main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, game, L, x_var, y_var, tiles
+    try:
+        with open('dimensions.csv', 'r', newline = '') as F:
+            x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
 
-for x_var in range(x_dim):
-    for y_var in range(y_dim):
-        buttonFunc(x_var, y_var)
-tiles = [x for x in game.winfo_children()]
-tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
+        root = Tk()
+        root.title("Minesweeper")
+        root.minsize(684, 700)
+        root.configure(bg = '#a1a1a1')
+        root.iconbitmap('assets\\logo.ico')
 
-if [x_dim, y_dim, count] == [5, 5, 5]:
-    firstScreen()
+        main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
+        printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
+        mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
 
-root.bind("<F5>", lambda x: firstScreen())
-root.bind("<F2>", lambda x: restart())
-root.mainloop()
+        game = Frame(root, bg = '#000', height = 572, width = 572)
+        game.pack(pady = 20)
+
+        with open('stats.csv', 'r', newline = '') as F:
+            L = list(csv.reader(F))
+            L[1][0] = int(L[1][0]) + 1
+            L[1][2] = f"{(int(L[1][1]) * 100) // int(L[1][0])}%"
+        with open('stats.csv', 'w', newline = '') as f:
+            writeObject = csv.writer(f)
+            writeObject.writerows(L)
+
+        menuMaker()
+        minesAdder(x_dim, y_dim, count)
+        countAdd()
+
+        for x_var in range(x_dim):
+            for y_var in range(y_dim):
+                buttonFunc(x_var, y_var)
+        tiles = [x for x in game.winfo_children()]
+        tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
+
+        if [x_dim, y_dim, count] == [5, 5, 5]:
+            firstScreen()
+
+        root.bind("<F5>", lambda x: firstScreen())
+        root.bind("<F2>", lambda x: restart())
+        root.mainloop()
+    except:
+        main()
+
+
+try:
+    with open('dimensions.csv', 'r', newline = '') as F:
+        x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
+    root = Tk()
+    root.title("Minesweeper")
+    root.minsize(684, 700)
+    root.configure(bg = '#a1a1a1')
+    root.iconbitmap('assets\\logo.ico')
+    main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
+    printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
+    mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
+    game = Frame(root, bg = '#000', height = 572, width = 572)
+    game.pack(pady = 20)
+    with open('stats.csv', 'r', newline = '') as F:
+        L = list(csv.reader(F))
+        L[1][0] = int(L[1][0]) + 1
+        L[1][2] = f"{(int(L[1][1]) * 100) // int(L[1][0])}%"
+    with open('stats.csv', 'w', newline = '') as f:
+        writeObject = csv.writer(f)
+        writeObject.writerows(L)
+    menuMaker()
+    minesAdder(x_dim, y_dim, count)
+    countAdd()
+    for x_var in range(x_dim):
+        for y_var in range(y_dim):
+            buttonFunc(x_var, y_var)
+    tiles = [x for x in game.winfo_children()]
+    tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
+    if [x_dim, y_dim, count] == [5, 5, 5]:
+        firstScreen()
+    root.bind("<F5>", lambda x: firstScreen())
+    root.bind("<F2>", lambda x: restart())
+    root.mainloop()
+except:
+    main()
