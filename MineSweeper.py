@@ -10,13 +10,12 @@ except ImportError:
     import ImageTk
     import Image
 
-x_dim = 5  # int(input('Please enter the x dimension: '))
-y_dim = 5  # int(input('Please enter the y dimension: '))
-count = 5  # int(input('Please enter the number of geese: '))
+with open('dimensions.csv', 'r', newline = '') as F:
+    x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
 
 root = Tk()
 root.title("Minesweeper")
-root.geometry("684x700")
+root.minsize(684, 700)
 root.configure(bg = '#a1a1a1')
 root.iconbitmap('assets\\logo.ico')
 
@@ -43,6 +42,20 @@ with open('stats.csv', 'w', newline = '') as f:
 # |||                                           ||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+def menuMaker():
+    mnu = Menu(root)
+    root.config(menu = mnu)
+
+    file_menu = Menu(mnu)
+    mnu.add_cascade(label = "File", menu = file_menu)
+
+    file_menu.add_command(label = "New Game", command = restart)
+    file_menu.add_separator()
+    file_menu.add_command(label = "Options", command = firstScreen)
+    file_menu.add_separator()
+    file_menu.add_command(label = "Exit", command = root.quit)
+
+
 def minesAdder(x_dim, y_dim, count):
     global main_list, mines
     for i in range(count):
@@ -114,9 +127,10 @@ def tileList():
     tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
 
 
-def restart(window):
+def restart():
     global main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, tiles, root, game, L
     root.destroy()
+
     root = Tk()
     root.title("Minesweeper")
     root.geometry("684x700")
@@ -139,6 +153,7 @@ def restart(window):
 
     minesAdder(x_dim, y_dim, count)
     countAdd()
+    menuMaker()
 
     for x_var in range(x_dim):
         for y_var in range(y_dim):
@@ -208,6 +223,7 @@ def winCondition():
         window.grab_set()
         window.configure(bg = '#515151')
         window.geometry("330x250")
+        window.iconbitmap('assets\\logo.ico')
         stats = Frame(window, bg = '#515151')
         stats.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 20)
         tot, win, perc = statChanger(winVar)
@@ -232,7 +248,7 @@ def winCondition():
         restBtn = Label(window, text = "Play Again", font = ('Calibri 26 bold'), borderwidth = 3, relief = 'raised',
                         bg = '#A10000', fg = '#fff')
         restBtn.grid(row = 1, column = 1, padx = 7, pady = 7)
-        restBtn.bind('<Button-1>', lambda x: restart(window))
+        restBtn.bind('<Button-1>', lambda x: restart())
         if winVar == 2:
             window.title("You Win!")
             Label(stats, text = "Congratulations! You Won the Game!!", bg = '#515151', fg = '#fff',
@@ -311,11 +327,45 @@ def statChanger(x):
     return tot, win, perc
 
 
+def dimSet(height, width, mines, diff):
+    global x_dim, y_dim, count
+    value = diff.get()
+    toRestart = False
+
+    if value == 1:
+        x_dim, y_dim, count = 9, 9, 10
+        toRestart = True
+    elif value == 2:
+        x_dim, y_dim, count = 16, 16, 40
+        toRestart = True
+    elif value == 3:
+        x_dim, y_dim, count = 24, 24, 99
+        toRestart = True
+    elif value == 0:
+        x_dim, y_dim, count = int(height.get()), int(width.get()), int(mines.get())
+        if (x_dim >= 9) and (y_dim >= 9) and (10 <= count <= x_dim * y_dim):
+            toRestart = True
+        else:
+            print('\a')
+
+    if toRestart:
+        with open('dimensions.csv', 'w', newline = '') as f:
+            writeObject = csv.writer(f)
+            writeObject.writerow(['xdim', 'ydim', 'mines'])
+            writeObject.writerow([x_dim, y_dim, count])
+
+        restart()
+
+
 def firstScreen():
     config = Toplevel()
     config.grab_set()
+    config.iconbitmap('assets\\logo.ico')
     difficulty = LabelFrame(config, text = 'Difficulty')
     difficulty.pack(padx = 20, pady = 20)
+
+    Button(config, text = "OK", command = lambda: dimSet(height, width, mines, diff)).pack()
+
     firstThreeDifficulty = Frame(difficulty)
     firstThreeDifficulty.grid(column = 0, row = 0, padx = 10)
 
@@ -325,6 +375,7 @@ def firstScreen():
     customDifficultyButton.grid(row = 0, column = 0, columnspan = 2)
 
     diff = IntVar()
+    diff.set(1)
 
     bbtn = Radiobutton(firstThreeDifficulty, text = "Beginner    \n10 Mines\n9x9 Grid  ", variable = diff, value = 1)
     bbtn.pack(anchor = W)
@@ -356,7 +407,7 @@ def firstScreen():
 
     hcmd = (root.register(lambda x: validate_entry(x, 9, 24, height)), "%P")
     wcmd = (root.register(lambda x: validate_entry(x, 9, 24, width)), "%P")
-    mcmd = (root.register(lambda x: validate_entry(x, 10, 400, mines)), "%P")
+    mcmd = (root.register(lambda x: validate_entry(x, 10, min(int(height.get()) * int(width.get()), 400), mines)), "%P")
 
     hlbl = Label(customDifficulty, state = DISABLED, text = "Height (9-24)")
     hlbl.grid(row = 1, column = 0)
@@ -405,7 +456,7 @@ def firstScreen():
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
-
+menuMaker()
 minesAdder(x_dim, y_dim, count)
 countAdd()
 
@@ -415,6 +466,8 @@ for x_var in range(x_dim):
 tiles = [x for x in game.winfo_children()]
 tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
 
-firstScreen()
+if [x_dim, y_dim, count] == [5, 5, 5]:
+    firstScreen()
 
+root.bind("<F5>", lambda x: firstScreen())
 root.mainloop()
