@@ -1,14 +1,22 @@
-import sys
-import string
-import random
-import csv
+import csv, random
 from tkinter import *
-
 try:
-    from PIL import Image, ImageTk
-except ImportError:
-    import ImageTk
-    import Image
+    try:
+        from PIL import Image, ImageTk
+    except ImportError:
+        import ImageTk
+        import Image
+except ModuleNotFoundError:
+    import sys, subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pillow"])
+    del sys
+    del subprocess
+    try:
+        from PIL import Image, ImageTk
+    except ImportError:
+        import ImageTk
+        import Image
+
 
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
@@ -18,6 +26,27 @@ except ImportError:
 # |||                                           ||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
+class Timer:
+    def __init__(self, label):
+        self.label = label
+        self.seconds = 0
+        self.isRunning = False
+
+    def counter_label(self):
+        def count():
+            if self.isRunning:
+                self.label['text'] = self.seconds
+                self.label.after(1000, count)
+                self.seconds += 1
+        count()
+
+    def start(self):
+        self.isRunning = True
+        self.counter_label()
+
+    def reset(self):
+        self.isRunning = False
+        self.seconds = 0
 
 
 def menuMaker():
@@ -47,8 +76,9 @@ def minesAdder(x_dim, y_dim, count):
 
 
 def show(x_coord, y_coord, event):
-    global main_list, printable_list, revealPerTurn, revealed
+    global main_list, printable_list, revealPerTurn, revealed, timer
 
+    if not timer.isRunning: timer.start()
     if ((x_coord, y_coord) not in marked) and ((x_coord, y_coord) not in revealed):
         buttonUpdater(event.widget, main_list[x_coord][y_coord])
         revealPerTurn.append((x_coord, y_coord))
@@ -69,7 +99,7 @@ def normalReveal(x_coord, y_coord):
     buttonUpdater(tiles[x_coord][y_coord], main_list[x_coord][y_coord])
 
 
-def zeroReveal(x_coord, y_coord, ):
+def zeroReveal(x_coord, y_coord):
     global zeroes, revealPerTurn
     neighbors = neighborCalc(x_coord, y_coord)
     for x, y in neighbors:
@@ -90,6 +120,7 @@ def mark(x, y, event):
         buttonUpdater(event.widget, -2)
         marked.remove((x, y))
         printable_list[x][y] = '*'
+    mine_label["text"] = count - len(marked)
     winCondition()
 
 
@@ -106,41 +137,9 @@ def tileList():
 
 
 def restart():
-    global main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, tiles, root, game, L
+    global root
     root.destroy()
-
-    root = Tk()
-    root.title("Minesweeper")
-    root.geometry("684x700")
-    root.configure(bg = '#a1a1a1')
-
-    main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
-    printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
-    mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
-
-    game = Frame(root, bg = '#000', height = 572, width = 572)
-    game.pack(pady = 20)
-
-    with open('stats.csv', 'r', newline = '') as F:
-        L = list(csv.reader(F))
-        L[1][0] = int(L[1][0]) + 1
-        L[1][2] = f"{(int(L[1][1]) * 100) // int(L[1][0])}%"
-    with open('stats.csv', 'w', newline = '') as f:
-        writeObject = csv.writer(f)
-        writeObject.writerows(L)
-
-    minesAdder(x_dim, y_dim, count)
-    countAdd()
-    menuMaker()
-
-    for x_var in range(x_dim):
-        for y_var in range(y_dim):
-            buttonFunc(x_var, y_var)
-    tiles = [x for x in game.winfo_children()]
-    tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
-
-    root.bind("<F5>", lambda x: firstScreen())
-    root.bind("<F2>", lambda x: restart())
+    main()
 
 
 def neighborCalc(x_coord, y_coord):
@@ -187,8 +186,6 @@ def countAdd():
 
 
 def isGameWon():
-    if not [i for i in mines if i not in marked]:
-        return 2
     for i in mines:
         if i in revealed:
             return 0
@@ -198,8 +195,10 @@ def isGameWon():
 
 
 def winCondition():
+    global timer
     winVar = isGameWon()
     if winVar in (0, 2):
+        timer.reset()
         window = Toplevel()
         window.grab_set()
         window.configure(bg = '#515151')
@@ -458,7 +457,7 @@ def firstScreen():
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
 
 def main():
-    global x_dim, y_dim, count, F, root, main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, game, L, x_var, y_var, tiles
+    global x_dim, y_dim, count, F, root, main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, game, L, x_var, y_var, tiles, timer, timer_label, stuff, mine_label
     try:
         with open('dimensions.csv', 'r', newline = '') as F:
             x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
@@ -474,7 +473,18 @@ def main():
         mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
 
         game = Frame(root, bg = '#000', height = 572, width = 572)
-        game.pack(pady = 20)
+        game.pack(pady = 5)
+
+        stuff = Frame(root, bg = '#a1a1a1', width = 572)
+        stuff.pack()
+
+        timer_label = Label(stuff, text = "0", fg = "white", bg = "#515151", font = "DS-Digital 40", width = 5)
+        timer_label.grid(row = 0, column = 0, padx = 30)
+
+        timer = Timer(timer_label)
+
+        mine_label = Label(stuff, text = count, fg = "white", bg = "#515151", font = "DS-Digital 40", width = 5)
+        mine_label.grid(row = 0, column = 1, padx = 30)
 
         with open('stats.csv', 'r', newline = '') as F:
             L = list(csv.reader(F))
@@ -500,42 +510,9 @@ def main():
         root.bind("<F5>", lambda x: firstScreen())
         root.bind("<F2>", lambda x: restart())
         root.mainloop()
-    except:
+    except ModuleNotFoundError:
+        root.destroy()
         main()
 
 
-try:
-    with open('dimensions.csv', 'r', newline = '') as F:
-        x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
-    root = Tk()
-    root.title("Minesweeper")
-    root.minsize(684, 700)
-    root.configure(bg = '#a1a1a1')
-    root.iconbitmap('assets\\logo.ico')
-    main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
-    printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
-    mines, zeroes, revealPerTurn, marked, revealed = [], [], [], [], []
-    game = Frame(root, bg = '#000', height = 572, width = 572)
-    game.pack(pady = 20)
-    with open('stats.csv', 'r', newline = '') as F:
-        L = list(csv.reader(F))
-        L[1][0] = int(L[1][0]) + 1
-        L[1][2] = f"{(int(L[1][1]) * 100) // int(L[1][0])}%"
-    with open('stats.csv', 'w', newline = '') as f:
-        writeObject = csv.writer(f)
-        writeObject.writerows(L)
-    menuMaker()
-    minesAdder(x_dim, y_dim, count)
-    countAdd()
-    for x_var in range(x_dim):
-        for y_var in range(y_dim):
-            buttonFunc(x_var, y_var)
-    tiles = [x for x in game.winfo_children()]
-    tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
-    if [x_dim, y_dim, count] == [5, 5, 5]:
-        firstScreen()
-    root.bind("<F5>", lambda x: firstScreen())
-    root.bind("<F2>", lambda x: restart())
-    root.mainloop()
-except:
-    main()
+main()
