@@ -1,4 +1,4 @@
-# Geese Spotter
+# Minesweeper
 
 
 - [x] Make it Work
