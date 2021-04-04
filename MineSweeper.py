@@ -1,25 +1,6 @@
-import random, pickle
+import random, pickle, pyglet
 from tkinter import *
-try:
-    import pyglet
-    try:
-        from PIL import Image, ImageTk
-    except ImportError:
-        import ImageTk
-        import Image
-except ModuleNotFoundError:
-    import sys, subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pillow"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyglet"])
-    del sys
-    del subprocess
-    import pyglet
-    try:
-        from PIL import Image, ImageTk
-    except ImportError:
-        import ImageTk
-        import Image
-
+from PIL import Image, ImageTk
 
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||| #
