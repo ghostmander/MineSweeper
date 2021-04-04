@@ -1,7 +1,5 @@
 test.py
 .idea
 .vscode
-*.docx
-*.zip
-*.rar
 *.spec
+Local Files
