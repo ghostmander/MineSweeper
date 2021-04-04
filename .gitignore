@@ -1,3 +1,7 @@
 test.py
 .idea
-*.csv
+.vscode
+*.docx
+*.zip
+*.rar
+*.spec
