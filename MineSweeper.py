@@ -1,6 +1,7 @@
-import csv, random
+import random, pickle
 from tkinter import *
 try:
+    import pyglet
     try:
         from PIL import Image, ImageTk
     except ImportError:
@@ -9,8 +10,10 @@ try:
 except ModuleNotFoundError:
     import sys, subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pillow"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyglet"])
     del sys
     del subprocess
+    import pyglet
     try:
         from PIL import Image, ImageTk
     except ImportError:
@@ -203,7 +206,7 @@ def winCondition():
         window.grab_set()
         window.configure(bg = '#515151')
         window.geometry("330x250")
-        window.iconbitmap('assets\\logo.ico')
+        window.iconbitmap('assets/Sprites/logo.ico')
         stats = Frame(window, bg = '#515151')
         stats.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 20)
         tot, win, perc = statChanger(winVar)
@@ -242,7 +245,7 @@ def winCondition():
 def buttonFunc(i, j):
     height, width = (572 // y_dim), (572 // x_dim)
     image = ImageTk.PhotoImage(Image.open(
-        'assets/unrevealed_tile.png').resize((height, width)))
+        'assets/Sprites/unrevealed_tile.png').resize((height, width)))
     lbl = Label(game, image = image)
     lbl.image = image
     lbl.grid(row = i, column = j, padx = 0.5, pady = 0.5)
@@ -254,56 +257,59 @@ def buttonFunc(i, j):
 def buttonUpdater(lbl, number):
     if number == 0:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/zero.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/zero.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 1:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/one.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/one.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 2:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/two.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/two.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 3:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/three.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/three.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 4:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/four.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/four.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 5:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/five.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/five.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 6:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/six.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/six.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 7:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/seven.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/seven.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 8:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/eight.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/eight.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == 9:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/bomb.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/bomb.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == -1:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/flag.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/flag.png').resize(((572 // y_dim), (572 // x_dim))))
     elif number == -2:
         image = ImageTk.PhotoImage(Image.open(
-            'assets/unrevealed_tile.png').resize(((572 // y_dim), (572 // x_dim))))
+            'assets/Sprites/unrevealed_tile.png').resize(((572 // y_dim), (572 // x_dim))))
     lbl['image'] = image
     lbl.image = image
 
 
 def statChanger(x):
-    with open('stats.csv', 'r', newline = '') as F:
-        L = list(csv.reader(F))
-        tot, win, perc = L[1]
-        tot, win = int(tot), int(win)
-        if x:
-            win += 1
+    with open('assets/data', 'rb') as f:
+        data = pickle.load(f)
+
+        tot, win, perc = data['Stats']['Total'], data['Stats']['Win'], data['Stats']['Percentage']
+
+        if x: 
+            win += 1; 
             perc = f"{(win * 100) // tot}%"
-        L[1] = [tot, win, perc]
-    with open('stats.csv', 'w', newline = '') as f:
-        writeObject = csv.writer(f)
-        writeObject.writerows(L)
+
+        data['Stats']['Total'], data['Stats']['Win'], data['Stats']['Percentage'] = tot, win, perc
+
+    with open('assets/data', 'wb') as f:
+        writeObject = pickle.dump(data, f)
+    
     return tot, win, perc
 
 
@@ -343,10 +349,12 @@ def dimSet(height, width, mines, diff):
             print('\a')
 
     if toRestart:
-        with open('dimensions.csv', 'w', newline = '') as f:
-            writeObject = csv.writer(f)
-            writeObject.writerow(['xdim', 'ydim', 'mines'])
-            writeObject.writerow([x_dim, y_dim, count])
+        with open('assets/data', 'rb') as f:
+            data = pickle.load(f)
+            data['Dimensions']['xdim'], data['Dimensions']['ydim'], data['Dimensions']['mines'] = x_dim, y_dim, count
+
+        with open('assets/data', 'wb') as f:
+            pickle.dump(data, f)
 
         restart()
 
@@ -354,7 +362,7 @@ def dimSet(height, width, mines, diff):
 def firstScreen():
     config = Toplevel()
     config.grab_set()
-    config.iconbitmap('assets\\logo.ico')
+    config.iconbitmap('assets/Sprites/logo.ico')
     difficulty = LabelFrame(config, text = 'Difficulty')
     difficulty.pack(padx = 20, pady = 20)
 
@@ -459,14 +467,15 @@ def firstScreen():
 def main():
     global x_dim, y_dim, count, F, root, main_list, printable_list, mines, zeroes, revealPerTurn, marked, revealed, game, L, x_var, y_var, tiles, timer, timer_label, stuff, mine_label
     try:
-        with open('dimensions.csv', 'r', newline = '') as F:
-            x_dim, y_dim, count = list(map(int, list(csv.reader(F))[1]))
+        with open('assets/data', 'rb') as f:
+            data = pickle.load(f)
+            x_dim, y_dim, count = data['Dimensions']['xdim'], data['Dimensions']['ydim'], data['Dimensions']['mines']
 
         root = Tk()
         root.title("Minesweeper")
         root.minsize(684, 700)
         root.configure(bg = '#a1a1a1')
-        root.iconbitmap('assets\\logo.ico')
+        root.iconbitmap('assets/Sprites/logo.ico')
 
         main_list = [[0 for y in range(y_dim)] for x in range(x_dim)]
         printable_list = [["*" for y in range(y_dim)] for x in range(x_dim)]
@@ -478,6 +487,8 @@ def main():
         stuff = Frame(root, bg = '#a1a1a1', width = 572)
         stuff.pack()
 
+        pyglet.font.add_file("assets/Font/DS-DIGI.TTF")
+
         timer_label = Label(stuff, text = "0", fg = "white", bg = "#515151", font = "DS-Digital 40", width = 5)
         timer_label.grid(row = 0, column = 0, padx = 30)
 
@@ -486,13 +497,13 @@ def main():
         mine_label = Label(stuff, text = count, fg = "white", bg = "#515151", font = "DS-Digital 40", width = 5)
         mine_label.grid(row = 0, column = 1, padx = 30)
 
-        with open('stats.csv', 'r', newline = '') as F:
-            L = list(csv.reader(F))
-            L[1][0] = int(L[1][0]) + 1
-            L[1][2] = f"{(int(L[1][1]) * 100) // int(L[1][0])}%"
-        with open('stats.csv', 'w', newline = '') as f:
-            writeObject = csv.writer(f)
-            writeObject.writerows(L)
+        with open('assets/data', 'rb') as f:
+            data = pickle.load(f)
+
+            data['Stats']['Total'] += 1
+            data['Stats']['Percentage'] = f"{(data['Stats']['Win'] * 100) // data['Stats']['Total']}%"
+        with open('assets/data', 'wb') as f: pickle.dump(data, f)
+
 
         menuMaker()
         minesAdder(x_dim, y_dim, count)
@@ -504,15 +515,24 @@ def main():
         tiles = [x for x in game.winfo_children()]
         tiles = list(tiles[i:i + y_dim] for i in range(0, len(tiles), y_dim))
 
-        if [x_dim, y_dim, count] == [5, 5, 5]:
+        if [x_dim, y_dim, count] == [5, 5, 0]:
             firstScreen()
 
         root.bind("<F5>", lambda x: firstScreen())
         root.bind("<F2>", lambda x: restart())
         root.mainloop()
+    except (FileExistsError, FileNotFoundError):
+        with open("assets/data", "wb") as f:
+            data = {
+                "Dimensions": { "xdim" : 5, "ydim" : 5, "mines": 0 },
+                "Stats"     : { "Total": 0, "Percentage": "0%", "Win": 0 }
+            }
+            pickle.dump(data, f)
+        main()
+        
     except ModuleNotFoundError:
         root.destroy()
         main()
 
-
-main()
+if __name__ == '__main__':
+    main()
